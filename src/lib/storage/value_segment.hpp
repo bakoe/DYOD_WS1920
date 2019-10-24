@@ -29,7 +29,7 @@ class ValueSegment : public BaseSegment {
 
  protected:
    // stores the values internally
-   std::vector<AllTypeVariant> _values;
+   std::vector<T> _values;
 };
 
 }  // namespace opossum
