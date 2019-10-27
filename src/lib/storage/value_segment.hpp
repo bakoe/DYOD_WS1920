@@ -28,8 +28,8 @@ class ValueSegment : public BaseSegment {
   const std::vector<T>& values() const;
 
  protected:
-   // stores the values internally
-   std::vector<T> _values;
+  // stores the values internally
+  std::vector<T> _values;
 };
 
 }  // namespace opossum
