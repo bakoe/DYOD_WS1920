@@ -77,6 +77,10 @@ class Table : private Noncopyable {
   void append(std::vector<AllTypeVariant> values);
 
  protected:
-  // Implementation goes here
+  std::vector<std::string> m_column_names;
+  std::vector<std::string> m_column_types;
+  std::vector<std::shared_ptr<Chunk>> chunks;
+
+  ChunkOffset m_max_chunk_size;
 };
 }  // namespace opossum
