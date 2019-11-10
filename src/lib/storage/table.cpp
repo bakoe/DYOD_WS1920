@@ -11,6 +11,7 @@
 
 #include "value_segment.hpp"
 
+#include "dictionary_segment.hpp"
 #include "resolve_type.hpp"
 #include "types.hpp"
 #include "utils/assert.hpp"
@@ -82,6 +83,17 @@ Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks[chunk_id]; }
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return *_chunks[chunk_id]; }
 
-void Table::compress_chunk(ChunkID chunk_id) { throw std::runtime_error("Implement Table::compress_chunk"); }
+void Table::compress_chunk(ChunkID chunk_id) {
+  auto newChunk = std::make_shared<Chunk>();
+  // Todo: (anyone) use getter
+  auto oldChunk = _chunks.at(chunk_id);
+  for (auto segment_index = (ColumnID)0; segment_index < oldChunk->column_count(); segment_index++) {
+    auto newSegment = make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(segment_index),
+                                                                               oldChunk->get_segment(segment_index));
+    newChunk->add_segment(newSegment);
+  }
+
+  _chunks[chunk_id] = newChunk;
+}
 
 }  // namespace opossum
