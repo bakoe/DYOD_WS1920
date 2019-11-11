@@ -6,6 +6,7 @@
 #include <memory>
 #include <numeric>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -87,10 +88,27 @@ void Table::compress_chunk(ChunkID chunk_id) {
   auto newChunk = std::make_shared<Chunk>();
   // Todo: (anyone) use getter
   auto oldChunk = _chunks.at(chunk_id);
+
+  // TODO(anyone): Replace all camelCase variables with sneaky_eaky_case
+
+  std::vector<std::thread> threads(oldChunk->column_count());
+  std::vector<std::shared_ptr<BaseSegment>> compressed_segments(oldChunk->column_count());
+
+  auto compress_segment = [&compressed_segments](const std::string& column_type,
+                                                 const std::shared_ptr<BaseSegment>& uncompressed_segment,
+                                                 const ColumnID& segment_index) {
+    compressed_segments[segment_index] =
+        make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type, uncompressed_segment);
+  };
+
   for (auto segment_index = (ColumnID)0; segment_index < oldChunk->column_count(); segment_index++) {
-    auto newSegment = make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(segment_index),
-                                                                               oldChunk->get_segment(segment_index));
-    newChunk->add_segment(newSegment);
+    threads[segment_index] =
+        std::thread(compress_segment, column_type(segment_index), oldChunk->get_segment(segment_index), segment_index);
+  }
+
+  for (auto thread_index = (ColumnID)0; thread_index < threads.size(); thread_index++) {
+    threads[thread_index].join();
+    newChunk->add_segment(compressed_segments[thread_index]);
   }
 
   _chunks[chunk_id] = newChunk;
