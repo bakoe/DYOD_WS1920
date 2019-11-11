@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "all_type_variant.hpp"
+#include "base_attribute_vector.hpp"
+#include "fixed_size_attribute_vector.hpp"
+#include "resolve_type.hpp"
 #include "types.hpp"
 
 namespace opossum {
@@ -45,7 +48,13 @@ class DictionarySegment : public BaseSegment {
       }
     }
 
-    _attribute_vector = std::make_shared<std::vector<uint32_t>>();
+    if (_dictionary->size() < std::numeric_limits<uint8_t>::max()) {
+      _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint8_t>>(base_segment->size());
+    } else if (_dictionary->size() < std::numeric_limits<uint16_t>::max()) {
+      _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint16_t>>(base_segment->size());
+    } else {
+      _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint32_t>>(base_segment->size());
+    }
 
     // TODO Replace any (X)0 with X{0}
     for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
@@ -53,7 +62,7 @@ class DictionarySegment : public BaseSegment {
       uint32_t dictionaryIndex =
           std::distance(_dictionary->begin(), std::lower_bound(_dictionary->begin(), _dictionary->end(),
                                                                type_cast<T>(base_segment->operator[](value_index))));
-      _attribute_vector->push_back(dictionaryIndex);
+      _attribute_vector->set(value_index, ValueID{dictionaryIndex});
     }
   }
 
@@ -62,11 +71,11 @@ class DictionarySegment : public BaseSegment {
 
   // return the value at a certain position. If you want to write efficient operators, back off!
   AllTypeVariant operator[](const ChunkOffset chunk_offset) const override {
-    return _dictionary->at(_attribute_vector->at(chunk_offset));
+    return _dictionary->at(_attribute_vector->get(chunk_offset));
   }
 
   // return the value at a certain position.
-  T get(const size_t chunk_offset) const { return _dictionary->at(_attribute_vector->at(chunk_offset)); }
+  T get(const size_t chunk_offset) const { return _dictionary->at(_attribute_vector->get(chunk_offset)); }
 
   // dictionary segments are immutable
   void append(const AllTypeVariant&) override { throw std::exception(); };
@@ -121,8 +130,7 @@ class DictionarySegment : public BaseSegment {
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;
-  // TODO: (anyone) change to FixedSizeAttributeVector<uintX_t>
-  std::shared_ptr<std::vector<uint32_t>> _attribute_vector;
+  std::shared_ptr<BaseAttributeVector> _attribute_vector;
 };
 
 }  // namespace opossum
