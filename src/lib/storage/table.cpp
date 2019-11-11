@@ -84,6 +84,9 @@ Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks[chunk_id]; }
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return *_chunks[chunk_id]; }
 
+// TODO(anyone): Check if this is the right way to create the mutex
+std::mutex chunk_access_mutex;
+
 void Table::compress_chunk(ChunkID chunk_id) {
   auto newChunk = std::make_shared<Chunk>();
   // Todo: (anyone) use getter
@@ -111,6 +114,8 @@ void Table::compress_chunk(ChunkID chunk_id) {
     newChunk->add_segment(compressed_segments[thread_index]);
   }
 
+  // TODO(anyone): Check if this is the right way to lock (without unlocking?) the mutex
+  chunk_access_mutex.lock();
   _chunks[chunk_id] = newChunk;
 }
 
