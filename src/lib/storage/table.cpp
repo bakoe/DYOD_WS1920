@@ -128,6 +128,9 @@ void Table::compress_chunk(ChunkID chunk_id) {
 
   // Replace the old, potentially uncompressed chunk with the new chunk (containing all compressed segments)
   _chunks[chunk_id] = new_chunk;
+
+  // Release mutex to free resource
+  chunk_access_mutex.unlock();
 }
 
 }  // namespace opossum
