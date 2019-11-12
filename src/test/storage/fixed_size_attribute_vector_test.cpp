@@ -9,8 +9,7 @@
 
 namespace opossum {
 
-class FixedSizeAttributeVectorTest : public BaseTest {
-};
+class FixedSizeAttributeVectorTest : public BaseTest {};
 
 TEST_F(FixedSizeAttributeVectorTest, InstantiateWithUint8Size) {
   auto vector = FixedSizeAttributeVector<uint8_t>(5);

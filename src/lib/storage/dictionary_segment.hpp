@@ -1,9 +1,11 @@
 #pragma once
 
+#include <type_cast.hpp>
+
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
-#include <type_cast.hpp>
 #include <utility>
 #include <vector>
 
@@ -77,22 +79,21 @@ class DictionarySegment : public BaseSegment {
   T get(const size_t chunk_offset) const { return _dictionary->at(_attribute_vector->get(chunk_offset)); }
 
   // dictionary segments are immutable
-  void append(const AllTypeVariant&) override { throw std::exception(); };
+  void append(const AllTypeVariant&) override { throw std::exception(); }
 
   // returns an underlying dictionary
-  std::shared_ptr<const std::vector<T>> dictionary() { return _dictionary; };
+  std::shared_ptr<const std::vector<T>> dictionary() { return _dictionary; }
 
   // returns an underlying data structure
-  std::shared_ptr<const BaseAttributeVector> attribute_vector() { return _attribute_vector; };
+  std::shared_ptr<const BaseAttributeVector> attribute_vector() { return _attribute_vector; }
 
   // return the value represented by a given ValueID
-  const T& value_by_value_id(ValueID value_id) { return _dictionary->at(value_id); };
+  const T& value_by_value_id(ValueID value_id) { return _dictionary->at(value_id); }
 
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {
-    // TODO (anyone): Replace explicit type
-    for (uint32_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
+    for (size_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
       if (get(value_index) >= value) {
         return ValueID{value_index};
       }
@@ -106,8 +107,7 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {
-    // TODO (anyone): Replace explicit type
-    for (uint32_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
+    for (size_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
       if (get(value_index) > value) {
         return ValueID{value_index};
       }
@@ -116,20 +116,20 @@ class DictionarySegment : public BaseSegment {
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(type_cast<T>(value)); };
+  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(type_cast<T>(value)); }
 
   // return the number of unique_values (dictionary entries)
   size_t unique_values_count() const { return _dictionary->size(); }
 
   // return the number of entries
-  size_t size() const override { return _attribute_vector->size(); };
+  size_t size() const override { return _attribute_vector->size(); }
 
   // returns the calculated memory usage
   size_t estimate_memory_usage() const final {
     auto dictionary_size = sizeof(T) * _dictionary->size();
     auto attribute_vector_size = _attribute_vector->width() * _attribute_vector->size();
     return dictionary_size + attribute_vector_size;
-  };
+  }
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;

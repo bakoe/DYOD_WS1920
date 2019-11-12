@@ -7,11 +7,11 @@
 
 namespace opossum {
 
-// TODO(anyone): Add explanatory comment
+// Attribute vector with a fixed size that stores references to values of the given template type
 template <typename T>
 class FixedSizeAttributeVector : public BaseAttributeVector {
  public:
-  FixedSizeAttributeVector(const size_t size);
+  explicit FixedSizeAttributeVector(const size_t size);
 
   // returns the value id at a given position
   ValueID get(const size_t i) const;

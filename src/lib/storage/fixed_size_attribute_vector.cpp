@@ -15,20 +15,19 @@ FixedSizeAttributeVector<T>::FixedSizeAttributeVector(const size_t size) {
 template <typename T>
 ValueID FixedSizeAttributeVector<T>::get(const size_t i) const {
   return ValueID{_values.at(i)};
-};
+}
 
 // sets the value id at a given position
 template <typename T>
 void FixedSizeAttributeVector<T>::set(const size_t i, const ValueID value_id) {
-  // TODO (anyone): Check whether we have to check for value_id being potentially larger than uint8_t, uint16_t
   _values[i] = value_id;
-};
+}
 
 // returns the number of values
 template <typename T>
 size_t FixedSizeAttributeVector<T>::size() const {
   return _values.size();
-};
+}
 
 // returns the width of biggest value id in bytes
 template <typename T>
@@ -40,7 +39,7 @@ AttributeVectorWidth FixedSizeAttributeVector<T>::width() const {
     }
   }
   return max_width;
-};
+}
 
 template class FixedSizeAttributeVector<uint8_t>;
 template class FixedSizeAttributeVector<uint16_t>;
