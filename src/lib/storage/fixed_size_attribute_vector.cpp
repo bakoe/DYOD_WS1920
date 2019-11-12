@@ -41,6 +41,7 @@ AttributeVectorWidth FixedSizeAttributeVector<T>::width() const {
   return max_width;
 }
 
+// Restricts the Template to only these 3 integer types: uint8_t, uint16_t, uint32_t
 template class FixedSizeAttributeVector<uint8_t>;
 template class FixedSizeAttributeVector<uint16_t>;
 template class FixedSizeAttributeVector<uint32_t>;
