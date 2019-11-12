@@ -40,6 +40,11 @@ TEST_F(StorageTableTest, GetChunk) {
   t.get_chunk(ChunkID{1});
 }
 
+TEST_F(StorageTableTest, GetConstChunk) {
+  const Table t_const{2};
+  t_const.get_chunk(ChunkID{0});
+}
+
 TEST_F(StorageTableTest, ColumnCount) { EXPECT_EQ(t.column_count(), 2u); }
 
 TEST_F(StorageTableTest, RowCount) {
