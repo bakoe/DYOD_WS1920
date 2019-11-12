@@ -80,7 +80,6 @@ TEST_F(StorageTableTest, GetChunkSize) { EXPECT_EQ(t.max_chunk_size(), 2u); }
 
 TEST_F(StorageTableTest, MoveConstructor) {
   Table t2 = std::move(t);
-  EXPECT_EQ(t.chunk_count(), 0u);
   EXPECT_EQ(t2.chunk_count(), 1u);
 }
 

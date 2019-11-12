@@ -27,12 +27,14 @@ Table::Table(uint32_t chunk_size) {
 }
 
 void Table::add_column(const std::string& name, const std::string& type) {
+  DebugAssert(row_count() == 0, "You can't add columns to tables that already contain entries.");
+
   // Store the name and type of the to-be-added column
   _column_names.push_back(name);
   _column_types.push_back(type);
 
   // Add a ValueSegment for the new column to each of the chunks
-  for (ChunkID chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
+  for (auto chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
     auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
     _chunks[chunk_index]->add_segment(segment);
   }
@@ -58,7 +60,7 @@ uint16_t Table::column_count() const { return _column_names.size(); }
 
 uint64_t Table::row_count() const {
   uint64_t row_count = 0;
-  for (ChunkID chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
+  for (auto chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
     row_count += _chunks[chunk_index]->size();
   }
   return row_count;
@@ -76,9 +78,15 @@ uint32_t Table::max_chunk_size() const { return _maximum_chunk_size; }
 
 const std::vector<std::string>& Table::column_names() const { return _column_names; }
 
-const std::string& Table::column_name(ColumnID column_id) const { return _column_names[column_id]; }
+const std::string& Table::column_name(ColumnID column_id) const {
+  DebugAssert(column_id < _column_names.size(), "There exists no column with the given ID.");
+  return _column_names[column_id];
+}
 
-const std::string& Table::column_type(ColumnID column_id) const { return _column_types[column_id]; }
+const std::string& Table::column_type(ColumnID column_id) const {
+  DebugAssert(column_id < _column_names.size(), "There exists no column with the given ID.");
+  return _column_types[column_id];
+}
 
 Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks[chunk_id]; }
 
