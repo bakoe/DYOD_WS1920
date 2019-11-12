@@ -10,38 +10,41 @@
 namespace opossum {
 
 StorageManager& StorageManager::get() {
-  return *(new StorageManager());
-  // A really hacky fix to get the tests to run - replace this with your implementation
+  static StorageManager instance;
+  return instance;
 }
 
 void StorageManager::add_table(const std::string& name, std::shared_ptr<Table> table) {
-  // Implementation goes here
+  DebugAssert(!has_table(name), "There already exists a table with the given name.");
+  _tables.insert({name, table});
 }
 
 void StorageManager::drop_table(const std::string& name) {
-  // Implementation goes here
+  if (!(has_table(name))) throw std::exception();
+  _tables.erase(name);
 }
 
-std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const {
-  // Implementation goes here
-  return nullptr;
-}
+std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const { return _tables.at(name); }
 
-bool StorageManager::has_table(const std::string& name) const {
-  // Implementation goes here
-  return false;
-}
+bool StorageManager::has_table(const std::string& name) const { return _tables.count(name); }
 
 std::vector<std::string> StorageManager::table_names() const {
-  throw std::runtime_error("Implement StorageManager::table_names");
+  std::vector<std::string> table_names;
+  for (const auto& _table : _tables) {
+    table_names.push_back(_table.first);
+  }
+  return table_names;
 }
 
 void StorageManager::print(std::ostream& out) const {
-  // Implementation goes here
+  for (const auto& _table : _tables) {
+    const std::string table_name = _table.first;
+    const std::shared_ptr<Table> table = _table.second;
+    out << table_name << ", " << table->column_count() << ", " << table->row_count() << ", " << table->chunk_count();
+    out << std::endl;
+  }
 }
 
-void StorageManager::reset() {
-  // Implementation goes here;
-}
+void StorageManager::reset() { _tables.clear(); }
 
 }  // namespace opossum
