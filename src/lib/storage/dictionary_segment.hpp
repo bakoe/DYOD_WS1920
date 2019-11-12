@@ -39,10 +39,12 @@ class DictionarySegment : public BaseSegment {
 
     _dictionary = std::make_shared<std::vector<T>>();
 
+    bool found_first_value = false;
     T prevValue;
     for (auto value_index = (ChunkOffset)0; value_index < sorted_values.size(); value_index++) {
       auto value = sorted_values[value_index];
-      if (value != prevValue) {
+      if (value != prevValue || !found_first_value) {
+        found_first_value = true;
         _dictionary->push_back(value);
         prevValue = value;
       }
@@ -127,8 +129,8 @@ class DictionarySegment : public BaseSegment {
 
   // returns the calculated memory usage
   size_t estimate_memory_usage() const final {
-    auto dictionary_size = sizeof(_dictionary) + sizeof(T) * _dictionary->capacity();
-    auto attribute_vector_size = sizeof(_attribute_vector) + _attribute_vector->width() * _attribute_vector->size();
+    auto dictionary_size = sizeof(T) * _dictionary->size();
+    auto attribute_vector_size = _attribute_vector->width() * _attribute_vector->size();
     return dictionary_size + attribute_vector_size;
   };
 
