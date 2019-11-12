@@ -22,7 +22,6 @@ class FixedSizeAttributeVector : public BaseAttributeVector {
   // returns the number of values
   size_t size() const;
 
-  // TODO(anyone): Check whether we actually do what the method comment explains
   // returns the width of biggest value id in bytes
   AttributeVectorWidth width() const;
 

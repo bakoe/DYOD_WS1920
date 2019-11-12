@@ -32,7 +32,6 @@ class DictionarySegment : public BaseSegment {
   explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
     auto sorted_values = std::vector<T>(base_segment->size());
     for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
-      // Todo: (anyone) check if this would work as well: auto value = (*base_segment)[value_index];
       sorted_values[value_index] = type_cast<T>(base_segment->operator[](value_index));
     }
     std::sort(sorted_values.begin(), sorted_values.end());
@@ -59,7 +58,6 @@ class DictionarySegment : public BaseSegment {
     }
 
     for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
-      // Todo: (anyone) check if this would work as well: auto value = (*base_segment)[value_index];
       uint32_t dictionaryIndex =
           std::distance(_dictionary->begin(), std::lower_bound(_dictionary->begin(), _dictionary->end(),
                                                                type_cast<T>(base_segment->operator[](value_index))));

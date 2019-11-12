@@ -89,7 +89,6 @@ std::mutex chunk_access_mutex;
 
 void Table::compress_chunk(ChunkID chunk_id) {
   auto newChunk = std::make_shared<Chunk>();
-  // Todo: (anyone) use getter
   auto oldChunk = _chunks.at(chunk_id);
 
   // TODO(anyone): Replace all camelCase variables with sneaky_eaky_case

@@ -30,7 +30,6 @@ size_t FixedSizeAttributeVector<T>::size() const {
   return _values.size();
 };
 
-// TODO(anyone): Check whether we actually do what the method comment explains
 // returns the width of biggest value id in bytes
 template <typename T>
 AttributeVectorWidth FixedSizeAttributeVector<T>::width() const {
