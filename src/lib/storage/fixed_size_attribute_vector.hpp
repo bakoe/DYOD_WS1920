@@ -12,7 +12,9 @@ template <typename T>
 class FixedSizeAttributeVector : public BaseAttributeVector {
  public:
   /**
-   * Creates a Fixed size attribute vector with the given fixed size
+   * Creates a Fixed size attribute vector with the given fixed size.
+   *
+   * @param size is a size_t indicating the fixed size that the attribute vector should reserve/use
    */
   explicit FixedSizeAttributeVector(const size_t size);
 
