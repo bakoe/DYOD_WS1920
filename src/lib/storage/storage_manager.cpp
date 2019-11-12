@@ -24,10 +24,7 @@ void StorageManager::drop_table(const std::string& name) {
   _tables.erase(name);
 }
 
-std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const {
-  DebugAssert(has_table(name), "There exists no table with the given name.");
-  return _tables.at(name);
-}
+std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const { return _tables.at(name); }
 
 bool StorageManager::has_table(const std::string& name) const { return _tables.count(name); }
 
