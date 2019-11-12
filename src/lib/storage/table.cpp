@@ -32,7 +32,7 @@ void Table::add_column(const std::string& name, const std::string& type) {
   _column_types.push_back(type);
 
   // Add a ValueSegment for the new column to each of the chunks
-  for (ChunkID chunk_index = (ChunkID)0; chunk_index < _chunks.size(); chunk_index++) {
+  for (ChunkID chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
     auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
     _chunks[chunk_index]->add_segment(segment);
   }
@@ -58,17 +58,17 @@ uint16_t Table::column_count() const { return _column_names.size(); }
 
 uint64_t Table::row_count() const {
   uint64_t row_count = 0;
-  for (ChunkID chunk_index = (ChunkID)0; chunk_index < _chunks.size(); chunk_index++) {
+  for (ChunkID chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
     row_count += _chunks[chunk_index]->size();
   }
   return row_count;
 }
 
-ChunkID Table::chunk_count() const { return (ChunkID)_chunks.size(); }
+ChunkID Table::chunk_count() const { return ChunkID{_chunks.size()}; }
 
 ColumnID Table::column_id_by_name(const std::string& column_name) const {
   auto iterator = std::find(_column_names.begin(), _column_names.end(), column_name);
-  if (iterator != _column_names.end()) return (ColumnID)std::distance(_column_names.begin(), iterator);
+  if (iterator != _column_names.end()) return ColumnID{std::distance(_column_names.begin(), iterator)};
   throw std::exception();
 }
 
@@ -104,12 +104,12 @@ void Table::compress_chunk(ChunkID chunk_id) {
         make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type, uncompressed_segment);
   };
 
-  for (auto segment_index = (ColumnID)0; segment_index < oldChunk->column_count(); segment_index++) {
+  for (auto segment_index = ColumnID{0}; segment_index < oldChunk->column_count(); segment_index++) {
     threads[segment_index] =
         std::thread(compress_segment, column_type(segment_index), oldChunk->get_segment(segment_index), segment_index);
   }
 
-  for (auto thread_index = (ColumnID)0; thread_index < threads.size(); thread_index++) {
+  for (auto thread_index = ColumnID{0}; thread_index < threads.size(); thread_index++) {
     threads[thread_index].join();
     newChunk->add_segment(compressed_segments[thread_index]);
   }

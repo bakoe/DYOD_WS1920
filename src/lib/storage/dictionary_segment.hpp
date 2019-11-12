@@ -58,7 +58,6 @@ class DictionarySegment : public BaseSegment {
       _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint32_t>>(base_segment->size());
     }
 
-    // TODO Replace any (X)0 with X{0}
     for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
       // Todo: (anyone) check if this would work as well: auto value = (*base_segment)[value_index];
       uint32_t dictionaryIndex =
