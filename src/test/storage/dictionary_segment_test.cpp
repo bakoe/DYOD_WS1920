@@ -81,11 +81,11 @@ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
   auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
 
-  EXPECT_EQ(dict_col->lower_bound(4), (opossum::ValueID)2);
-  EXPECT_EQ(dict_col->upper_bound(4), (opossum::ValueID)3);
+  EXPECT_EQ(dict_col->lower_bound(4), opossum::ValueID{2});
+  EXPECT_EQ(dict_col->upper_bound(4), opossum::ValueID{3});
 
-  EXPECT_EQ(dict_col->lower_bound(5), (opossum::ValueID)3);
-  EXPECT_EQ(dict_col->upper_bound(5), (opossum::ValueID)3);
+  EXPECT_EQ(dict_col->lower_bound(5), opossum::ValueID{3});
+  EXPECT_EQ(dict_col->upper_bound(5), opossum::ValueID{3});
 
   EXPECT_EQ(dict_col->lower_bound(15), opossum::INVALID_VALUE_ID);
   EXPECT_EQ(dict_col->upper_bound(15), opossum::INVALID_VALUE_ID);
