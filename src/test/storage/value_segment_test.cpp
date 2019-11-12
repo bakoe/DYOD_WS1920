@@ -22,6 +22,13 @@ TEST_F(StorageValueSegmentTest, GetSize) {
   EXPECT_EQ(double_value_segment.size(), 0u);
 }
 
+TEST_F(StorageValueSegmentTest, GetValues) {
+  EXPECT_EQ(int_value_segment.values(), std::vector<int>());
+  int_value_segment.append(3);
+  int_value_segment.append(5);
+  EXPECT_EQ(int_value_segment.values(), std::vector<int>({3, 5}));
+}
+
 TEST_F(StorageValueSegmentTest, AddValueOfSameType) {
   int_value_segment.append(3);
   EXPECT_EQ(int_value_segment.size(), 1u);
