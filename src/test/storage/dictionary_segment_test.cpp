@@ -97,5 +97,3 @@ TEST_F(StorageDictionarySegmentTest, MemoryUsage) {
 
   EXPECT_EQ(int_dictionary_segment->estimate_memory_usage(), 5 * sizeof(int) + 5 * sizeof(uint8_t));
 }
-
-// TODO(student): You should add some more tests here (full coverage would be appreciated) and possibly in other files.
