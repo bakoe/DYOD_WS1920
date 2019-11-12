@@ -87,14 +87,14 @@ const Chunk& Table::get_chunk(ChunkID chunk_id) const { return *_chunks[chunk_id
 std::mutex chunk_access_mutex;
 
 void Table::compress_chunk(ChunkID chunk_id) {
-  auto newChunk = std::make_shared<Chunk>();
-  auto oldChunk = _chunks.at(chunk_id);
+  auto new_chunk = std::make_shared<Chunk>();
+  auto old_chunk = _chunks.at(chunk_id);
 
-  // TODO(anyone): Replace all camelCase variables with sneaky_eaky_case
+  std::vector<std::thread> threads(old_chunk->column_count());
+  std::vector<std::shared_ptr<BaseSegment>> compressed_segments(old_chunk->column_count());
 
-  std::vector<std::thread> threads(oldChunk->column_count());
-  std::vector<std::shared_ptr<BaseSegment>> compressed_segments(oldChunk->column_count());
-
+  // Lambda function which compresses a given uncompressed segment (with a given type) and writes the output to the
+  // given position in the compressed_segments vector
   auto compress_segment = [&compressed_segments](const std::string& column_type,
                                                  const std::shared_ptr<BaseSegment>& uncompressed_segment,
                                                  const ColumnID& segment_index) {
@@ -102,18 +102,24 @@ void Table::compress_chunk(ChunkID chunk_id) {
         make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type, uncompressed_segment);
   };
 
-  for (auto segment_index = ColumnID{0}; segment_index < oldChunk->column_count(); segment_index++) {
+  // Start one thread for each of the segments in order to compress it
+  for (auto segment_index = ColumnID{0}; segment_index < old_chunk->column_count(); segment_index++) {
     threads[segment_index] =
-        std::thread(compress_segment, column_type(segment_index), oldChunk->get_segment(segment_index), segment_index);
+        std::thread(compress_segment, column_type(segment_index), old_chunk->get_segment(segment_index), segment_index);
   }
 
+  // Wait for all compression threads to finish and add their output (from the compressed_segments vector)
+  // to the new chunk
   for (auto thread_index = ColumnID{0}; thread_index < threads.size(); thread_index++) {
     threads[thread_index].join();
-    newChunk->add_segment(compressed_segments[thread_index]);
+    new_chunk->add_segment(compressed_segments[thread_index]);
   }
 
+  // Prevent the _chunks vector from concurrent access
   chunk_access_mutex.lock();
-  _chunks[chunk_id] = newChunk;
+
+  // Replace the old, potentially uncompressed chunk with the new chunk (containing all compressed segments)
+  _chunks[chunk_id] = new_chunk;
 }
 
 }  // namespace opossum

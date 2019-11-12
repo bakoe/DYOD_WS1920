@@ -11,6 +11,9 @@ namespace opossum {
 template <typename T>
 class FixedSizeAttributeVector : public BaseAttributeVector {
  public:
+  /**
+   * Creates a Fixed size attribute vector with the given fixed size
+   */
   explicit FixedSizeAttributeVector(const size_t size);
 
   // returns the value id at a given position

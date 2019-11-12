@@ -32,25 +32,37 @@ class DictionarySegment : public BaseSegment {
    * Creates a Dictionary segment from a given value segment.
    */
   explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
+    // sorted_values acts as a copy of base_segment's values in a sorted way (used only for the dictionary creation)
     auto sorted_values = std::vector<T>(base_segment->size());
-    for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
+
+    // Since we haven't access to the underlying data structure of the BaseSegment base_segment, we use
+    // the [] operator to manually create a copy of the base_segment's values
+    for (size_t value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
       sorted_values[value_index] = type_cast<T>(base_segment->operator[](value_index));
     }
+
+    // The copied values are sorted for efficient generation of the dictionary
     std::sort(sorted_values.begin(), sorted_values.end());
 
     _dictionary = std::make_shared<std::vector<T>>();
 
+    // Fill the dictionary by walking through base_segment's sorted values and adding a new entry to the dictionary
+    // whenever the current value has changed (i.e. a new and thus unknown - because of the sorting - value has been
+    // found).
+    // As a bonus, the dictionary is then already sorted as well.
     bool found_first_value = false;
-    T prevValue;
+    T previous_value;
     for (auto value_index = (ChunkOffset)0; value_index < sorted_values.size(); value_index++) {
       auto value = sorted_values[value_index];
-      if (value != prevValue || !found_first_value) {
+      if (value != previous_value || !found_first_value) {
         found_first_value = true;
         _dictionary->push_back(value);
-        prevValue = value;
+        previous_value = value;
       }
     }
 
+    // Determine the size of the to-be-created FixedSizeAttributeVector based on the amount of distinct values
+    // (i.e. the length/size of the dictionary)
     if (_dictionary->size() < std::numeric_limits<uint8_t>::max()) {
       _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint8_t>>(base_segment->size());
     } else if (_dictionary->size() < std::numeric_limits<uint16_t>::max()) {
@@ -59,11 +71,14 @@ class DictionarySegment : public BaseSegment {
       _attribute_vector = std::make_shared<FixedSizeAttributeVector<uint32_t>>(base_segment->size());
     }
 
-    for (auto value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
-      uint32_t dictionaryIndex =
+    // Build up the attribute vector by looking up the index of the value in the dictionary for each value.
+    // Because the dictionary is already sorted, we can use the efficient std::lower_bound method for performing a
+    // binary search for the dictionary index.
+    for (size_t value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
+      uint32_t dictionary_index =
           std::distance(_dictionary->begin(), std::lower_bound(_dictionary->begin(), _dictionary->end(),
                                                                type_cast<T>(base_segment->operator[](value_index))));
-      _attribute_vector->set(value_index, ValueID{dictionaryIndex});
+      _attribute_vector->set(value_index, ValueID{dictionary_index});
     }
   }
 
