@@ -7,7 +7,7 @@
 
 namespace opossum {
 
-// TODO Add comment
+// TODO(anyone): Add explanatory comment
 template <typename T>
 class FixedSizeAttributeVector : public BaseAttributeVector {
  public:

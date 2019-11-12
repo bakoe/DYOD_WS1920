@@ -39,6 +39,26 @@ TEST_F(StorageDictionarySegmentTest, CompressSegmentString) {
   EXPECT_EQ((*dict)[3], "Steve");
 }
 
+TEST_F(StorageDictionarySegmentTest, CompressSegmentWithMoreThanSizeofUint8DistinctValues) {
+  // Append one more than std::numeric_limits<uint8_t>::max() entries to the integer value segment
+  for (int i = 0; i < std::numeric_limits<uint8_t>::max() + 1; i += 1) vc_int->append(i);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  auto attribute_vector = dict_col->attribute_vector();
+  EXPECT_EQ((attribute_vector->width()), sizeof(uint16_t));
+}
+
+TEST_F(StorageDictionarySegmentTest, CompressSegmentWithMoreThanSizeofUint16DistinctValues) {
+  // Append one more than std::numeric_limits<uint16_t>::max() entries to the integer value segment
+  for (int i = 0; i < std::numeric_limits<uint16_t>::max() + 1; i += 1) vc_int->append(i);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  auto attribute_vector = dict_col->attribute_vector();
+  EXPECT_EQ((attribute_vector->width()), sizeof(uint32_t));
+}
+
 TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   for (int i = 0; i <= 10; i += 2) vc_int->append(i);
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
