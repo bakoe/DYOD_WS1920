@@ -126,7 +126,11 @@ class DictionarySegment : public BaseSegment {
   size_t size() const override { return _attribute_vector->size(); };
 
   // returns the calculated memory usage
-  size_t estimate_memory_usage() const final { return 550; };
+  size_t estimate_memory_usage() const final {
+    auto dictionary_size = sizeof(_dictionary) + sizeof(T) * _dictionary->capacity();
+    auto attribute_vector_size = sizeof(_attribute_vector) + _attribute_vector->width() * _attribute_vector->size();
+    return dictionary_size + attribute_vector_size;
+  };
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;
