@@ -59,6 +59,22 @@ TEST_F(StorageDictionarySegmentTest, CompressSegmentWithMoreThanSizeofUint16Dist
   EXPECT_EQ((attribute_vector->width()), sizeof(uint32_t));
 }
 
+TEST_F(StorageDictionarySegmentTest, ArrayAccessOperator) {
+  vc_int->append(3);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_EQ(opossum::type_cast<int>(dict_col->operator[](0)), 3);
+}
+
+TEST_F(StorageDictionarySegmentTest, IsImmutable) {
+  vc_int->append(3);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_THROW(dict_col->append(5), std::exception);
+}
+
 TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   for (int i = 0; i <= 10; i += 2) vc_int->append(i);
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
