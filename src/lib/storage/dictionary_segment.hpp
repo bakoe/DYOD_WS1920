@@ -88,7 +88,6 @@ class DictionarySegment : public BaseSegment {
   std::shared_ptr<const BaseAttributeVector> attribute_vector() { return _attribute_vector; };
 
   // return the value represented by a given ValueID
-  // TODO(anyone): Add a test for this method
   const T& value_by_value_id(ValueID value_id) { return _dictionary->at(value_id); };
 
   // returns the first value ID that refers to a value >= the search value

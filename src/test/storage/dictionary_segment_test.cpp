@@ -97,3 +97,11 @@ TEST_F(StorageDictionarySegmentTest, MemoryUsage) {
 
   EXPECT_EQ(int_dictionary_segment->estimate_memory_usage(), 5 * sizeof(int) + 5 * sizeof(uint8_t));
 }
+
+TEST_F(StorageDictionarySegmentTest, GetValueByValueId) {
+  for (int i = 1; i <= 5; i += 1) vc_int->append(i);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto int_dictionary_segment = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_EQ(int_dictionary_segment->value_by_value_id(opossum::ValueID{0}), 1);
+}
