@@ -26,6 +26,10 @@ Table::Table(uint32_t chunk_size) {
   _chunks.push_back(first_chunk);
 }
 
+void Table::add_column_definition(const std::string& name, const std::string& type) {
+  // Implementation goes here
+}
+
 void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(row_count() == 0, "You can't add columns to tables that already contain entries.");
 
@@ -54,6 +58,10 @@ void Table::append(const std::vector<AllTypeVariant> values) {
 
   // Append the to-be-appended values to the last chunk
   last_chunk->append(values);
+}
+
+void Table::create_new_chunk() {
+  // Implementation goes here
 }
 
 uint16_t Table::column_count() const { return _column_names.size(); }
@@ -131,6 +139,10 @@ void Table::compress_chunk(ChunkID chunk_id) {
 
   // Release mutex to free resource
   chunk_access_mutex.unlock();
+}
+
+void emplace_chunk(Chunk chunk) {
+  // Implementation goes here
 }
 
 }  // namespace opossum
