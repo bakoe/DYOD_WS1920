@@ -32,7 +32,6 @@ class DictionarySegment : public BaseSegment {
    * Creates a Dictionary segment from a given value segment.
    */
   explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
-
     _dictionary = std::make_shared<std::vector<T>>(base_segment->size());
 
     // Since we haven't access to the underlying data structure of the BaseSegment base_segment, we use
@@ -59,10 +58,10 @@ class DictionarySegment : public BaseSegment {
     // Because the dictionary is already sorted, we can use the efficient std::lower_bound method for performing a
     // binary search for the dictionary index.
     for (size_t value_index = (ChunkOffset)0; value_index < base_segment->size(); value_index++) {
-      uint32_t dictionary_index =
+      ValueID dictionary_index = ValueID{
           std::distance(_dictionary->begin(), std::lower_bound(_dictionary->begin(), _dictionary->end(),
-                                                               type_cast<T>(base_segment->operator[](value_index))));
-      _attribute_vector->set(value_index, ValueID{dictionary_index});
+                                                               type_cast<T>(base_segment->operator[](value_index))))};
+      _attribute_vector->set(value_index, dictionary_index);
     }
   }
 
