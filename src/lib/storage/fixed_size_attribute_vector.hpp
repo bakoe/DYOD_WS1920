@@ -7,7 +7,7 @@
 
 namespace opossum {
 
-// Attribute vector with a fixed size that stores references to values of the given template type
+// Attribute vector with a fixed size that stores values of the given template type
 template <typename T>
 class FixedSizeAttributeVector : public BaseAttributeVector {
  public:
