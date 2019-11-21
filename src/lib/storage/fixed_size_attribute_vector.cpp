@@ -14,7 +14,7 @@ FixedSizeAttributeVector<T>::FixedSizeAttributeVector(const size_t size) {
 // returns the value id at a given position
 template <typename T>
 ValueID FixedSizeAttributeVector<T>::get(const size_t i) const {
-  return ValueID{_values.at(i)};
+  return ValueID{_values[i]};
 }
 
 // sets the value id at a given position
