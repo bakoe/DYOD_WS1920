@@ -1,4 +1,4 @@
-rm -rf coverage
+rm -rf coverage .test
 rm -rf cmake-build-debug-coverage-clang
 mkdir cmake-build-debug-coverage-clang
 cd cmake-build-debug-coverage-clang
