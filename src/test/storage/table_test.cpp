@@ -40,6 +40,11 @@ TEST_F(StorageTableTest, GetChunk) {
   t.get_chunk(ChunkID{1});
 }
 
+TEST_F(StorageTableTest, GetConstChunk) {
+  const Table t_const{2};
+  t_const.get_chunk(ChunkID{0});
+}
+
 TEST_F(StorageTableTest, ColumnCount) { EXPECT_EQ(t.column_count(), 2u); }
 
 TEST_F(StorageTableTest, RowCount) {
@@ -76,6 +81,19 @@ TEST_F(StorageTableTest, GetChunkSize) { EXPECT_EQ(t.max_chunk_size(), 2u); }
 TEST_F(StorageTableTest, MoveConstructor) {
   Table t2 = std::move(t);
   EXPECT_EQ(t2.chunk_count(), 1u);
+}
+
+TEST_F(StorageTableTest, CompressChunk) {
+  t.append({4, "Hello,"});
+  t.append({6, "world"});
+  EXPECT_EQ(t.chunk_count(), 1u);
+
+  t.compress_chunk(ChunkID{0});
+
+  EXPECT_EQ(t.chunk_count(), 1u);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(ChunkID{0}).get_segment(ColumnID{0})->operator[](0)), 4);
+  EXPECT_EQ(type_cast<std::string>(t.get_chunk(ChunkID{0}).get_segment(ColumnID{1})->operator[](0)),
+            "Hello,");
 }
 
 }  // namespace opossum
