@@ -108,12 +108,8 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {
-    for (size_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
-      if (get(value_index) >= value) {
-        return ValueID{value_index};
-      }
-    }
-    return INVALID_VALUE_ID;
+    auto result = std::lower_bound(_dictionary->begin(), _dictionary->end(), value);
+    return result == _dictionary->end() ? INVALID_VALUE_ID : ValueID(std::distance(_dictionary->begin(), result));
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
@@ -122,12 +118,8 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {
-    for (size_t value_index = 0; value_index < _attribute_vector->size(); value_index++) {
-      if (get(value_index) > value) {
-        return ValueID{value_index};
-      }
-    }
-    return INVALID_VALUE_ID;
+    auto result = std::upper_bound(_dictionary->begin(), _dictionary->end(), value);
+    return result == _dictionary->end() ? INVALID_VALUE_ID : ValueID(std::distance(_dictionary->begin(), result));
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
