@@ -34,6 +34,15 @@ class ReferenceSegment : public BaseSegment {
   const std::shared_ptr<const Table> referenced_table() const;
 
   ColumnID referenced_column_id() const;
+
+  // TODO(students): Check whether it's ok to add this to the publicly exposed class interface
+  // This is added because otherwise a "note" is emitted for the unimplemented pure virtual method
+  size_t estimate_memory_usage() const override;
+
+ protected:
+  const std::shared_ptr<const Table> _referenced_table;
+  const ColumnID _referenced_column_id;
+  const std::shared_ptr<const PosList> _pos;
 };
 
 }  // namespace opossum

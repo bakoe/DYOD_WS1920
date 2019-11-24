@@ -20,6 +20,7 @@ set(
     storage/dictionary_segment.hpp
     storage/fixed_size_attribute_vector.cpp
     storage/fixed_size_attribute_vector.hpp
+    storage/reference_segment.cpp
     storage/reference_segment.hpp
     storage/storage_manager.cpp
     storage/storage_manager.hpp
