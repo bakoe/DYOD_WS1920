@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "reference_segment.hpp"
 
 namespace opossum {
@@ -10,7 +12,7 @@ AllTypeVariant ReferenceSegment::operator[](const ChunkOffset chunk_offset) cons
   RowID position = _pos->at(chunk_offset);
   const auto& chunk = _referenced_table->get_chunk(position.chunk_id);
   const auto& segment = chunk.get_segment(_referenced_column_id);
-  return segment->operator[](position.chunk_offset);
+  return (*segment)[position.chunk_offset];
 }
 
 // TODO(students): Add a test for this method
@@ -27,7 +29,7 @@ ColumnID ReferenceSegment::referenced_column_id() const { return _referenced_col
 
 // TODO(students): Add a test for this method
 size_t ReferenceSegment::estimate_memory_usage() const {
-  // TODO Implement
+  // TODO(students): Implement
   return 0;
 }
 

@@ -26,16 +26,17 @@ Table::Table(uint32_t chunk_size) {
   _chunks.push_back(first_chunk);
 }
 
+// TODO(student): Add a test for this method
 void Table::add_column_definition(const std::string& name, const std::string& type) {
-  // Implementation goes here
-}
-
-void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(row_count() == 0, "You can't add columns to tables that already contain entries.");
 
   // Store the name and type of the to-be-added column
   _column_names.push_back(name);
   _column_types.push_back(type);
+}
+
+void Table::add_column(const std::string& name, const std::string& type) {
+  add_column_definition(name, type);
 
   // Add a ValueSegment for the new column to each of the chunks
   for (auto chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
@@ -61,6 +62,7 @@ void Table::append(const std::vector<AllTypeVariant> values) {
 }
 
 void Table::create_new_chunk() {
+  // TODO(students): Implement
   // Implementation goes here
 }
 
@@ -142,6 +144,7 @@ void Table::compress_chunk(ChunkID chunk_id) {
 }
 
 void emplace_chunk(Chunk chunk) {
+  // TODO(students): Implement
   // Implementation goes here
 }
 

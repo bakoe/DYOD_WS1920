@@ -92,8 +92,7 @@ TEST_F(StorageTableTest, CompressChunk) {
 
   EXPECT_EQ(t.chunk_count(), 1u);
   EXPECT_EQ(type_cast<int>(t.get_chunk(ChunkID{0}).get_segment(ColumnID{0})->operator[](0)), 4);
-  EXPECT_EQ(type_cast<std::string>(t.get_chunk(ChunkID{0}).get_segment(ColumnID{1})->operator[](0)),
-            "Hello,");
+  EXPECT_EQ(type_cast<std::string>(t.get_chunk(ChunkID{0}).get_segment(ColumnID{1})->operator[](0)), "Hello,");
 }
 
 }  // namespace opossum
