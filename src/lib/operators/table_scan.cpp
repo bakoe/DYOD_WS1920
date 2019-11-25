@@ -84,16 +84,14 @@ std::shared_ptr<const Table> TableScan::_on_execute() {
           return;
         }
         auto reference_segment = std::dynamic_pointer_cast<ReferenceSegment>(segment);
-        if (reference_segment != nullptr) {
+        if (reference_segment != nullptr &&
+            reference_segment->referenced_table()->column_type(_column_id) == type_string) {
           const auto& referenced_pos_list = reference_segment->pos_list();
           const auto& table_referenced_by_segment = reference_segment->referenced_table();
           for (const RowID& referenced_pos : *referenced_pos_list) {
             // TODO(students): Use a factored out version of the two code blocks declared above
             const auto& referenced_segment =
                 table_referenced_by_segment->get_chunk(referenced_pos.chunk_id).get_segment(_column_id);
-            if (table_referenced_by_segment->column_type(_column_id) != type_string) {
-              return;
-            }
             // TODO(students): (Together with TODO above:) Remove this type_cast which leads to precision loss
             // TODO(students): Then isn't necessary anymore because we don't work on AllTypeVariant but on T
             const auto& value = type_cast<Type>((*referenced_segment)[referenced_pos.chunk_offset]);
