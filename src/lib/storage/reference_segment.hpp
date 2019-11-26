@@ -35,7 +35,6 @@ class ReferenceSegment : public BaseSegment {
 
   ColumnID referenced_column_id() const;
 
-  // TODO(students): Check whether it's ok to add this to the publicly exposed class interface
   // This is added because otherwise a "note" is emitted for the unimplemented pure virtual method
   size_t estimate_memory_usage() const override;
 
