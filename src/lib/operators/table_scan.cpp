@@ -70,85 +70,79 @@ std::shared_ptr<const Table> TableScan::_on_execute() {
       if (dictionary_segment != nullptr) {
         std::shared_ptr<const BaseAttributeVector> attribute_vector = dictionary_segment->attribute_vector();
 
-        switch (_scan_type) {
-          case ScanType::OpEquals: {
-            ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
-            ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
-            if (lower_bound != upper_bound) {
-              for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                   attribute_vector_index++) {
+        ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
+        ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
+
+          switch (_scan_type) {
+            case ScanType::OpEquals:
+              if (lower_bound == upper_bound) {
+                return;
+              }
+              break;
+            case ScanType::OpNotEquals:
+              if (lower_bound == 0 && upper_bound == dictionary_segment->unique_values_count()) {
+                return;
+              }
+              break;
+            case ScanType::OpLessThan:
+              if (lower_bound == 0) {
+                return;
+              }
+              break;
+            case ScanType::OpLessThanEquals:
+              if (upper_bound == 0) {
+                return;
+              }
+              break;
+            case ScanType::OpGreaterThan:
+              if (upper_bound == dictionary_segment->unique_values_count()) {
+                return;
+              }
+              break;
+            case ScanType::OpGreaterThanEquals:
+              if (lower_bound == dictionary_segment->unique_values_count()) {
+                return;
+              }
+              break;
+          }
+
+          for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
+               attribute_vector_index++) {
+            switch (_scan_type) {
+              case ScanType::OpEquals:
                 if (ValueID{attribute_vector->get(attribute_vector_index)} == lower_bound) {
                   matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
                 }
-              }
-            }
-            break;
-          }
-          case ScanType::OpNotEquals: {
-            ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
-            ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
-            for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                 attribute_vector_index++) {
-              if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound ||
-                  ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
-                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-              }
-            }
-            break;
-          }
-          case ScanType::OpLessThan: {
-            ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
-            if (lower_bound == 0) {
               break;
+              case ScanType::OpNotEquals:
+                if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound ||
+                    ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
+                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
+                }
+                break;
+              case ScanType::OpLessThan:
+                if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound) {
+                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
+                }
+                break;
+              case ScanType::OpLessThanEquals:
+                if (ValueID{attribute_vector->get(attribute_vector_index)} < upper_bound) {
+                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
+                }
+                break;
+              case ScanType::OpGreaterThan:
+                if (ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
+                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
+                }
+                break;
+              case ScanType::OpGreaterThanEquals:
+                if (ValueID{attribute_vector->get(attribute_vector_index)} >= lower_bound) {
+                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
+                }
+                break;
             }
-            for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                 attribute_vector_index++) {
-              if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound) {
-                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-              }
-            }
-            break;
+
           }
-          case ScanType::OpLessThanEquals: {
-            ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
-            if (upper_bound == 0) {
-              break;
-            }
-            for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                 attribute_vector_index++) {
-              if (ValueID{attribute_vector->get(attribute_vector_index)} < upper_bound) {
-                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-              }
-            }
-            break;
-          }
-          case ScanType::OpGreaterThan: {
-            ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
-            if (upper_bound == dictionary_segment->unique_values_count()) {
-              break;
-            }
-            for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                 attribute_vector_index++) {
-              if (ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
-                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-              }
-            }
-            break;
-          }
-          case ScanType::OpGreaterThanEquals: {
-            ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
-            if (lower_bound == dictionary_segment->unique_values_count()) {
-              break;
-            }
-            for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-                 attribute_vector_index++) {
-              if (ValueID{attribute_vector->get(attribute_vector_index)} >= lower_bound) {
-                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-              }
-            }
-            break;
-          }
-        }
 
         return;
       }
