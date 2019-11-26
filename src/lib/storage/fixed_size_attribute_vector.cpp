@@ -41,7 +41,8 @@ AttributeVectorWidth FixedSizeAttributeVector<T>::width() const {
   return max_width;
 }
 
-// Explicitly instantiate the template for the three possible integer types. This allows us to keep the code in the cpp file.
+// Explicitly instantiate the template for the three possible integer types.
+// This allows us to keep the code in the cpp file.
 template class FixedSizeAttributeVector<uint8_t>;
 template class FixedSizeAttributeVector<uint16_t>;
 template class FixedSizeAttributeVector<uint32_t>;

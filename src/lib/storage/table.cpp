@@ -21,21 +21,21 @@ namespace opossum {
 
 Table::Table(uint32_t chunk_size) {
   _maximum_chunk_size = chunk_size;
+
   // Automatically create the first chunk when creating a Table
-  auto first_chunk = std::make_shared<Chunk>();
-  _chunks.push_back(first_chunk);
+  create_new_chunk();
 }
 
 void Table::add_column_definition(const std::string& name, const std::string& type) {
-  // Implementation goes here
-}
-
-void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(row_count() == 0, "You can't add columns to tables that already contain entries.");
 
   // Store the name and type of the to-be-added column
   _column_names.push_back(name);
   _column_types.push_back(type);
+}
+
+void Table::add_column(const std::string& name, const std::string& type) {
+  add_column_definition(name, type);
 
   // Add a ValueSegment for the new column to each of the chunks
   for (auto chunk_index = ChunkID{0}; chunk_index < _chunks.size(); chunk_index++) {
@@ -61,7 +61,8 @@ void Table::append(const std::vector<AllTypeVariant> values) {
 }
 
 void Table::create_new_chunk() {
-  // Implementation goes here
+  auto new_chunk = std::make_shared<Chunk>();
+  _chunks.push_back(new_chunk);
 }
 
 uint16_t Table::column_count() const { return _column_names.size(); }
@@ -141,8 +142,12 @@ void Table::compress_chunk(ChunkID chunk_id) {
   chunk_access_mutex.unlock();
 }
 
-void emplace_chunk(Chunk chunk) {
-  // Implementation goes here
+void Table::emplace_chunk(Chunk chunk) {
+  if (_chunks.size() == 1 && _chunks[0]->size()) {
+    _chunks[0] = std::shared_ptr<Chunk>(&chunk);
+  } else {
+    _chunks.push_back(std::shared_ptr<Chunk>(&chunk));
+  }
 }
 
 }  // namespace opossum
