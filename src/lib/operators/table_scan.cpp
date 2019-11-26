@@ -73,91 +73,92 @@ std::shared_ptr<const Table> TableScan::_on_execute() {
         ValueID lower_bound = dictionary_segment->lower_bound(_search_value);
         ValueID upper_bound = dictionary_segment->upper_bound(_search_value);
 
+        // Return early if result set would be empty.
+        switch (_scan_type) {
+          case ScanType::OpEquals:
+            if (lower_bound == upper_bound) {
+              return;
+            }
+            break;
+          case ScanType::OpNotEquals:
+            if (lower_bound == 0 && upper_bound == dictionary_segment->unique_values_count()) {
+              return;
+            }
+            break;
+          case ScanType::OpLessThan:
+            if (lower_bound == 0) {
+              return;
+            }
+            break;
+          case ScanType::OpLessThanEquals:
+            if (upper_bound == 0) {
+              return;
+            }
+            break;
+          case ScanType::OpGreaterThan:
+            if (upper_bound == dictionary_segment->unique_values_count()) {
+              return;
+            }
+            break;
+          case ScanType::OpGreaterThanEquals:
+            if (lower_bound == dictionary_segment->unique_values_count()) {
+              return;
+            }
+            break;
+        }
+
+        // Search attribute_vector for possible results.
+        for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
+             attribute_vector_index++) {
           switch (_scan_type) {
             case ScanType::OpEquals:
-              if (lower_bound == upper_bound) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} == lower_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
             case ScanType::OpNotEquals:
-              if (lower_bound == 0 && upper_bound == dictionary_segment->unique_values_count()) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound ||
+                  ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
             case ScanType::OpLessThan:
-              if (lower_bound == 0) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
             case ScanType::OpLessThanEquals:
-              if (upper_bound == 0) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} < upper_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
             case ScanType::OpGreaterThan:
-              if (upper_bound == dictionary_segment->unique_values_count()) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
             case ScanType::OpGreaterThanEquals:
-              if (lower_bound == dictionary_segment->unique_values_count()) {
-                return;
+              if (ValueID{attribute_vector->get(attribute_vector_index)} >= lower_bound) {
+                matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
               }
               break;
           }
-
-          for (ChunkOffset attribute_vector_index = 0; attribute_vector_index < attribute_vector->size();
-               attribute_vector_index++) {
-            switch (_scan_type) {
-              case ScanType::OpEquals:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} == lower_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-              break;
-              case ScanType::OpNotEquals:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound ||
-                    ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-                break;
-              case ScanType::OpLessThan:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} < lower_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-                break;
-              case ScanType::OpLessThanEquals:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} < upper_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-                break;
-              case ScanType::OpGreaterThan:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} >= upper_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-                break;
-              case ScanType::OpGreaterThanEquals:
-                if (ValueID{attribute_vector->get(attribute_vector_index)} >= lower_bound) {
-                  matching_pos_list->push_back(RowID{chunk_id, attribute_vector_index});
-                }
-                break;
-            }
-
-          }
+        }
 
         return;
       }
+
       auto reference_segment = std::dynamic_pointer_cast<ReferenceSegment>(segment);
       if (reference_segment != nullptr) {
         const auto& referenced_pos_list = reference_segment->pos_list();
         const auto& table_referenced_by_segment = reference_segment->referenced_table();
         for (const RowID& referenced_pos : *referenced_pos_list) {
-          // TODO(students): Use a factored out version of the two code blocks declared above
           const auto& referenced_segment =
               table_referenced_by_segment->get_chunk(referenced_pos.chunk_id).get_segment(_column_id);
-          // TODO(students): (Together with TODO above:) Remove this type_cast which leads to precision loss
-          // TODO(students): Then isn't necessary anymore because we don't work on AllTypeVariant but on T
+          // We are using the [] operator here because we want to avoid checking for segment type again.
           const auto& value = type_cast<Type>((*referenced_segment)[referenced_pos.chunk_offset]);
           if (matches_scan_criterion(value, type_cast<Type>(_search_value), _scan_type)) {
+            // Avoid ReferenceSegments to point to other ReferenceSegments.
             if (!is_referenced_table_replaced) {
               referenced_table = table_referenced_by_segment;
               is_referenced_table_replaced = true;
